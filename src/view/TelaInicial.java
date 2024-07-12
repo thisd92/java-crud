@@ -19,7 +19,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import db.Conexao;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.PreparedStatement;
+import javax.swing.Timer;
 
 /**
  *
@@ -63,6 +66,8 @@ public class TelaInicial extends javax.swing.JFrame {
         lblConn = new javax.swing.JLabel();
         txtPesquisa = new javax.swing.JTextField();
         btnPesquisar = new javax.swing.JButton();
+        jComboBox1 = new javax.swing.JComboBox<>();
+        jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -117,6 +122,10 @@ public class TelaInicial extends javax.swing.JFrame {
         }
     });
 
+    jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+    jLabel1.setText("Escolha a tabela que será utilizada:");
+
     jDesktopPane1.setLayer(btnConn, javax.swing.JLayeredPane.DEFAULT_LAYER);
     jDesktopPane1.setLayer(btnShowTb, javax.swing.JLayeredPane.DEFAULT_LAYER);
     jDesktopPane1.setLayer(btnInsert, javax.swing.JLayeredPane.DEFAULT_LAYER);
@@ -126,6 +135,8 @@ public class TelaInicial extends javax.swing.JFrame {
     jDesktopPane1.setLayer(lblConn, javax.swing.JLayeredPane.DEFAULT_LAYER);
     jDesktopPane1.setLayer(txtPesquisa, javax.swing.JLayeredPane.DEFAULT_LAYER);
     jDesktopPane1.setLayer(btnPesquisar, javax.swing.JLayeredPane.DEFAULT_LAYER);
+    jDesktopPane1.setLayer(jComboBox1, javax.swing.JLayeredPane.DEFAULT_LAYER);
+    jDesktopPane1.setLayer(jLabel1, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
     javax.swing.GroupLayout jDesktopPane1Layout = new javax.swing.GroupLayout(jDesktopPane1);
     jDesktopPane1.setLayout(jDesktopPane1Layout);
@@ -148,11 +159,21 @@ public class TelaInicial extends javax.swing.JFrame {
                     .addGap(0, 0, Short.MAX_VALUE))
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 701, Short.MAX_VALUE))
             .addContainerGap())
+        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jDesktopPane1Layout.createSequentialGroup()
+            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jLabel1)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(186, 186, 186))
     );
     jDesktopPane1Layout.setVerticalGroup(
         jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(jDesktopPane1Layout.createSequentialGroup()
-            .addGap(34, 34, 34)
+            .addContainerGap()
+            .addGroup(jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabel1))
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addGroup(jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jDesktopPane1Layout.createSequentialGroup()
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 308, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -172,7 +193,7 @@ public class TelaInicial extends javax.swing.JFrame {
                     .addComponent(txtPesquisa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(btnPesquisar)))
-            .addContainerGap(4, Short.MAX_VALUE))
+            .addContainerGap(45, Short.MAX_VALUE))
     );
 
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -185,7 +206,9 @@ public class TelaInicial extends javax.swing.JFrame {
     );
     layout.setVerticalGroup(
         layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addComponent(jDesktopPane1)
+        .addGroup(layout.createSequentialGroup()
+            .addComponent(jDesktopPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(0, 0, Short.MAX_VALUE))
     );
 
     pack();
@@ -194,20 +217,33 @@ public class TelaInicial extends javax.swing.JFrame {
     private void btnConnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConnActionPerformed
         // TODO add your handling code here:
         try {
-            conexao.getConnection();
+            if (conexao.isConexaoAberta()) {
+                lblConn.setText("Já existe uma conexão aberta!");
+            } else {
+                conexao.getConnection();
+                Timer timer = new Timer(3000, new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        lblConn.setText(null);
+                    }
+                });
+                timer.setRepeats(false); // O timer não deve repetir a tarefa
+                timer.start(); // Inicia o timer
+                lblConn.setText("Banco de Dados Conectado!");
+                preencherComboBox(evt);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(TelaInicial.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            lblConn.setText("Banco de Dados Conectado!");
         }
     }//GEN-LAST:event_btnConnActionPerformed
 
     private void btnShowTbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowTbActionPerformed
         // TODO add your handling code here:
+        String tabelaSelecionada = (String) jComboBox1.getSelectedItem();
         List<User> users = new ArrayList<>();
-        String sql = "SELECT id, nome, cpf, rg, dataNasc FROM tb_user";
+        String sql = "SELECT * FROM tb_user";
         try (Connection conn = conexao.getConnection();
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery(sql)) {
@@ -394,6 +430,19 @@ public class TelaInicial extends javax.swing.JFrame {
         }
     }
 
+    public void preencherComboBox(java.awt.event.ActionEvent evt) {
+        try {
+            List<String> tabelas = conexao.listarTabelas();
+            jComboBox1.removeAllItems();
+            for (String tabela : tabelas) {
+                jComboBox1.addItem(tabela);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Erro ao carregar tabelas: " + e.getMessage());
+        }
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -440,7 +489,9 @@ public class TelaInicial extends javax.swing.JFrame {
     private javax.swing.JButton btnPesquisar;
     private javax.swing.JButton btnShowTb;
     private javax.swing.JButton btnUpdate;
+    private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JDesktopPane jDesktopPane1;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JLabel lblConn;

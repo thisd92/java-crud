@@ -1,8 +1,12 @@
 package db;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Conexao {
 
@@ -11,7 +15,6 @@ public class Conexao {
     protected String url;
     protected String usuario;
     protected String senha;
-    protected String tabela;
     protected Connection conexao;
 
     public Conexao() throws SQLException {
@@ -19,14 +22,13 @@ public class Conexao {
         this.banco = "db_aula_java";
         this.url = "jdbc:mysql://" + servidor + "/" + banco;
         this.usuario = "root";
-        this.senha = "AdmRootDevTH22*";
-        this.tabela = "contatos";
-        this.conexao = DriverManager.getConnection(url, usuario, senha);
+        this.senha = "";
     }
 
     public Connection getConnection() throws SQLException, ClassNotFoundException {
         if (this.conexao == null || this.conexao.isClosed()) {
-            conectar();
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            this.conexao = DriverManager.getConnection(this.url, this.usuario, this.senha);
         }
         return this.conexao;
     }
@@ -42,11 +44,40 @@ public class Conexao {
         }
     }
 
-    public void conectar() throws ClassNotFoundException, SQLException {
-        if (this.conexao == null || this.conexao.isClosed()) {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            this.conexao = DriverManager.getConnection(this.url, this.usuario, this.senha);
+    public boolean isConexaoAberta() {
+        try {
+            return conexao != null && !conexao.isClosed();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
+    }
+
+    public List<String> listarTabelas() throws SQLException {
+        List<String> tabelas = new ArrayList<>();
+        if (isConexaoAberta()) {
+            DatabaseMetaData metaData = conexao.getMetaData();
+            String[] types = {"TABLE"};
+            try (ResultSet rs = metaData.getTables(null, null, "%", types)) {
+                while (rs.next()) {
+                    tabelas.add(rs.getString("TABLE_NAME"));
+                }
+            }
+        }
+        return tabelas;
+    }
+
+    public List<String> listarColunas(String tabela) throws SQLException {
+        List<String> colunas = new ArrayList<>();
+        if (isConexaoAberta()) {
+            DatabaseMetaData metaData = conexao.getMetaData();
+            try (ResultSet rs = metaData.getColumns(null, null, tabela, null)) {
+                while (rs.next()) {
+                    colunas.add(rs.getString("COLUMN_NAME"));
+                }
+            }
+        }
+        return colunas;
     }
 
 }
