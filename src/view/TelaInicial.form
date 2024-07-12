@@ -69,7 +69,7 @@
                   <EmptySpace max="32767" attributes="0"/>
                   <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="jComboBox1" min="-2" pref="180" max="-2" attributes="0"/>
+                  <Component id="jComboBoxTabelas" min="-2" pref="180" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="186" max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -79,7 +79,7 @@
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="jComboBox1" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jComboBoxTabelas" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
@@ -145,7 +145,7 @@
             <Component class="javax.swing.JTable" name="jTable1">
               <Properties>
                 <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="new javax.swing.table.DefaultTableModel(&#xa;            new Object [][] {},&#xa;            new String [] {&#xa;                &quot;ID&quot;, &quot;Nome&quot;, &quot;CPF&quot;, &quot;RG&quot;, &quot;Data Nascimento&quot;&#xa;            }&#xa;        )&#xa;" type="code"/>
+                  <Connection code="new javax.swing.table.DefaultTableModel(&#xa;            new Object [][] {},&#xa;            new String [] {}&#xa;        )&#xa;" type="code"/>
                 </Property>
                 <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
                   <TableColumnModel selectionModel="0"/>
@@ -185,7 +185,7 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnPesquisarActionPerformed"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JComboBox" name="jComboBox1">
+        <Component class="javax.swing.JComboBox" name="jComboBoxTabelas">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
               <StringArray count="4">

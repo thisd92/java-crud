@@ -58,7 +58,7 @@ public class Conexao {
         if (isConexaoAberta()) {
             DatabaseMetaData metaData = conexao.getMetaData();
             String[] types = {"TABLE"};
-            try (ResultSet rs = metaData.getTables(null, null, "%", types)) {
+            try (ResultSet rs = metaData.getTables(null, banco, "%", types)) {
                 while (rs.next()) {
                     tabelas.add(rs.getString("TABLE_NAME"));
                 }
@@ -69,14 +69,15 @@ public class Conexao {
 
     public List<String> listarColunas(String tabela) throws SQLException {
         List<String> colunas = new ArrayList<>();
-        if (isConexaoAberta()) {
-            DatabaseMetaData metaData = conexao.getMetaData();
-            try (ResultSet rs = metaData.getColumns(null, null, tabela, null)) {
-                while (rs.next()) {
-                    colunas.add(rs.getString("COLUMN_NAME"));
-                }
+        DatabaseMetaData metaData = conexao.getMetaData();
+
+        try (ResultSet rs = metaData.getColumns(null, null, tabela, null)) {
+            while (rs.next()) {
+                String coluna = rs.getString("COLUMN_NAME");
+                colunas.add(coluna);
             }
         }
+
         return colunas;
     }
 

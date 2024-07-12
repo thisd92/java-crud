@@ -40,6 +40,7 @@ public class TelaInicial extends javax.swing.JFrame {
      */
     public TelaInicial() throws SQLException {
         initComponents();
+        jComboBoxTabelas.removeAllItems();
         conexao = new Conexao();
         model = (DefaultTableModel) jTable1.getModel();
         viewCadastro = new ViewCadastro(this);
@@ -66,7 +67,7 @@ public class TelaInicial extends javax.swing.JFrame {
         lblConn = new javax.swing.JLabel();
         txtPesquisa = new javax.swing.JTextField();
         btnPesquisar = new javax.swing.JButton();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        jComboBoxTabelas = new javax.swing.JComboBox<>();
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -94,9 +95,7 @@ public class TelaInicial extends javax.swing.JFrame {
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {},
-            new String [] {
-                "ID", "Nome", "CPF", "RG", "Data Nascimento"
-            }
+            new String [] {}
         )
     );
     jScrollPane1.setViewportView(jTable1);
@@ -122,7 +121,7 @@ public class TelaInicial extends javax.swing.JFrame {
         }
     });
 
-    jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+    jComboBoxTabelas.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
     jLabel1.setText("Escolha a tabela que será utilizada:");
 
@@ -135,7 +134,7 @@ public class TelaInicial extends javax.swing.JFrame {
     jDesktopPane1.setLayer(lblConn, javax.swing.JLayeredPane.DEFAULT_LAYER);
     jDesktopPane1.setLayer(txtPesquisa, javax.swing.JLayeredPane.DEFAULT_LAYER);
     jDesktopPane1.setLayer(btnPesquisar, javax.swing.JLayeredPane.DEFAULT_LAYER);
-    jDesktopPane1.setLayer(jComboBox1, javax.swing.JLayeredPane.DEFAULT_LAYER);
+    jDesktopPane1.setLayer(jComboBoxTabelas, javax.swing.JLayeredPane.DEFAULT_LAYER);
     jDesktopPane1.setLayer(jLabel1, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
     javax.swing.GroupLayout jDesktopPane1Layout = new javax.swing.GroupLayout(jDesktopPane1);
@@ -163,7 +162,7 @@ public class TelaInicial extends javax.swing.JFrame {
             .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jLabel1)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(jComboBoxTabelas, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addGap(186, 186, 186))
     );
     jDesktopPane1Layout.setVerticalGroup(
@@ -171,7 +170,7 @@ public class TelaInicial extends javax.swing.JFrame {
         .addGroup(jDesktopPane1Layout.createSequentialGroup()
             .addContainerGap()
             .addGroup(jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jComboBoxTabelas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(jLabel1))
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addGroup(jDesktopPane1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -241,40 +240,39 @@ public class TelaInicial extends javax.swing.JFrame {
 
     private void btnShowTbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowTbActionPerformed
         // TODO add your handling code here:
-        String tabelaSelecionada = (String) jComboBox1.getSelectedItem();
-        List<User> users = new ArrayList<>();
-        String sql = "SELECT * FROM tb_user";
-        try (Connection conn = conexao.getConnection();
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(sql)) {
-            while (rs.next()) {
-                User user = new User();
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy"); // Define o formato desejado
-                java.sql.Date dataNasc = rs.getDate("dataNasc"); // Obtém a data do ResultSet
-                if (dataNasc != null) {
-                    String dataNascStr = dateFormat.format(dataNasc); // Converte a data para String
-                    user.setDataNasc(dataNascStr); // Define a data no objeto user
-                } else {
-                    user.setDataNasc(null); // Ou um valor padrão em caso de data nula
-                }
-                user.setId(rs.getInt("id"));
-                user.setNome(rs.getString("nome"));
-                user.setCpf(rs.getString("cpf"));
-                user.setRg(rs.getString("rg"));
-                users.add(user);
-            }
-            DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-            model.setRowCount(0); // Limpa a tabela antes de adicionar os novos dados
+        String tabelaSelecionada = (String) jComboBoxTabelas.getSelectedItem();
+        if (tabelaSelecionada != null && !tabelaSelecionada.isEmpty()) {
+            try (Connection conn = conexao.getConnection()) {
+                List<String> colunas = conexao.listarColunas(tabelaSelecionada);
 
-            for (User user : users) {
-                Object[] row = {user.getId(), user.getNome(), user.getCpf(), user.getRg(), user.getDataNasc()};
-                model.addRow(row); // Adiciona cada usuário como uma linha na tabela
+                model.setRowCount(0);
+                model.setColumnIdentifiers(colunas.toArray());
+
+                String sql = "SELECT * FROM " + tabelaSelecionada;
+                try (Statement stmt = conn.createStatement();
+                        ResultSet rs = stmt.executeQuery(sql)) {
+
+                    while (rs.next()) {
+                        Object[] row = new Object[colunas.size()];
+                        for (int i = 0; i < colunas.size(); i++) {
+                            row[i] = rs.getObject(colunas.get(i));
+                        }
+                        model.addRow(row);
+                    }
+
+                    jTable1.setModel(model); // Atualiza o modelo da jTable
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Erro ao executar a consulta SQL: " + e.getMessage());
+                }
+
+            } catch (SQLException | ClassNotFoundException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Erro ao conectar ao banco de dados: " + e.getMessage());
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            // Tratamento de erro, como exibir uma mensagem ao usuário
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(TelaInicial.class.getName()).log(Level.SEVERE, null, ex);
+        } else {
+            JOptionPane.showMessageDialog(this, "Por favor, selecione uma tabela.");
         }
     }//GEN-LAST:event_btnShowTbActionPerformed
 
@@ -433,9 +431,9 @@ public class TelaInicial extends javax.swing.JFrame {
     public void preencherComboBox(java.awt.event.ActionEvent evt) {
         try {
             List<String> tabelas = conexao.listarTabelas();
-            jComboBox1.removeAllItems();
+            jComboBoxTabelas.removeAllItems();
             for (String tabela : tabelas) {
-                jComboBox1.addItem(tabela);
+                jComboBoxTabelas.addItem(tabela);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -489,7 +487,7 @@ public class TelaInicial extends javax.swing.JFrame {
     private javax.swing.JButton btnPesquisar;
     private javax.swing.JButton btnShowTb;
     private javax.swing.JButton btnUpdate;
-    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JComboBox<String> jComboBoxTabelas;
     private javax.swing.JDesktopPane jDesktopPane1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
