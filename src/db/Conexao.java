@@ -58,7 +58,7 @@ public class Conexao {
         if (isConexaoAberta()) {
             DatabaseMetaData metaData = conexao.getMetaData();
             String[] types = {"TABLE"};
-            try (ResultSet rs = metaData.getTables(null, banco, "%", types)) {
+            try (ResultSet rs = metaData.getTables(banco, null, "%", types)) {
                 while (rs.next()) {
                     tabelas.add(rs.getString("TABLE_NAME"));
                 }
