@@ -419,7 +419,7 @@ public class TelaInicial extends javax.swing.JFrame {
             model.setRowCount(0); // Limpa a tabela antes de adicionar os novos dados
 
             for (User user : users) {
-                Object[] row = {user.getId(), user.getNome(), user.getCpf(), user.getRg(), user.getDataNasc()};
+                Object[] row = {user.getId(), user.getNome(), user.getCpf(), user.getRg(), user.getDataString(user.getDataNasc())};
                 model.addRow(row); // Adiciona cada usuário como uma linha na tabela
             }
         } catch (SQLException e) {

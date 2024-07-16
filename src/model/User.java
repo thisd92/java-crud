@@ -52,6 +52,11 @@ public class User {
         return dataNasc;
     }
 
+    public String getDataString(Date date) {
+        String data = new SimpleDateFormat("dd/MM/yyyy").format(date);
+        return data;
+    }
+
     public void setDataNasc(String dataNasc) {
         try {
             this.dataNasc = dateFormat.parse(dataNasc);
